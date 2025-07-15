@@ -1,11 +1,11 @@
 import express from 'express'
-import { tasks } from "./data.js"
+import { tasks } from "./src/data.js"
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json())
-
+app.use('/static', express.static('src'))
 
 app.get('/', (req, res) => {
     res.json({ message: 'Deploy on server' })
