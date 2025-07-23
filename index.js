@@ -1,5 +1,6 @@
 import express from 'express'
 import { tasks } from "./public/data.js"
+import { valuesDensity } from './public/bdDensity.js';
 
 const app = express();
 const PORT = 3000;
@@ -11,61 +12,34 @@ app.get('/', (req, res) => {
     res.json({ message: 'Deploy on server' })
 })
 
-app.get('/tasks', (req, res) => {
+//пример
+/* app.get('/tasks', (req, res) => {
     res.json({ data: tasks })
 })
+ */
 
-app.get('/tasks/:id', (req, res) => {
-    const taskId = parseInt(req.params.id, 10)
+app.get('/dens', (req, res) => {
+    try {
+        const { density, temperature } = req.query;
 
-    const task = tasks.find(task => task.id === taskId)
+        // Проверка существования значений в структуре данных
+        if (!valuesDensity[density] || !valuesDensity[density][temperature]) {
+            return res.status(404).json({ error: "Nothing found" });
+        }
 
-    if (task) {
-        res.json({ data: task })
-    } else {
-        res.status(404).json({ error: "Nothing found" })
+        const value = valuesDensity[density][temperature];
+        res.json({ data: value });
+
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: "Internal server error" });
     }
-})
+});
 
-app.post('/tasks', (req, res) => {
-    const title = req.body.title
-
-    const newTask = { id: tasks.length + 1, title }
-
-    tasks.push(newTask)
-
-    res.json({ data: newTask })
-})
-
-app.put('/tasks/:id', (req, res) => {
-    const taskId = parseInt(req.params.id, 10)
-
-    const taskIndex = tasks.findIndex(task => task.id === taskId)
-
-    if (taskIndex !== -1) {
-        tasks[taskIndex].title = req.body.title
-        res.json(tasks[taskIndex])
-    } else {
-        res.status(404).json({ error: "Task not found" })
-    }
-})
-
-app.delete('/tasks/:id', (req, res) => {
-    const taskId = parseInt(req.params.id, 10)
-
-    const taskIndex = tasks.findIndex(task => task.id === taskId)
-
-    if (taskIndex !== -1) {
-        tasks.splice(taskIndex, 1)
-        res.status(204).json({data: {id: taskId}})
-    } else {
-        res.status(404).json({ error: "Task not found" })
-    }
-})
 
 //отрабатывает если не один роутер не сработал
 app.use((req, res) => {
-    res.status(404).json({error: 'Nothing found'})
+    res.status(404).json({ error: 'Nothing found' })
 })
 
 app.listen(PORT, () => {
