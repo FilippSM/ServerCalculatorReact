@@ -1,4 +1,5 @@
 import express from 'express'
+import cors from 'cors';
 import { tasks } from "./public/data.js"
 import { valuesDensity } from './public/bdDensity.js';
 
