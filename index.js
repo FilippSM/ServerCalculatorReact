@@ -5,6 +5,17 @@ import { valuesDensity } from './public/bdDensity.js';
 const app = express();
 const PORT = 3000;
 
+// Включаем CORS для всех роутов
+app.use(cors({
+  origin: [
+    'http://localhost:5173', 
+    'https://your-frontend-app.vercel.app' 
+  ],
+  methods: ['GET'] // Разрешаем только GET-запросы
+}));
+
+
+
 app.use(express.json())
 app.use('/static', express.static('public'))
 
