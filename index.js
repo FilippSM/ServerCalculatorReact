@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors';
-import { tasks } from "./public/data.js"
+import { density } from "./public/data.js"
 import { valuesDensity } from './public/bdDensity.js';
 
 const app = express();
@@ -26,12 +26,13 @@ app.get('/', (req, res) => {
 })
 
 //пример
-/* app.get('/tasks', (req, res) => {
-    res.json({ data: tasks })
-})
- */
-
 app.get('/dens', (req, res) => {
+    res.json({ data: density })
+})
+
+
+//get one data on query parameters
+app.get('/dens/query', (req, res) => {
     try {
         const { density, temperature } = req.query;
 
@@ -48,6 +49,17 @@ app.get('/dens', (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
+//create one data
+app.post('/dens', (req, res) => {
+    const densityFor20 = req.body.density
+
+    const newDensity = { id: density.length + 1, densityFor20 }
+
+    density.push(newDensity)
+
+    res.json({ data: newDensity })
+})
 
 
 //отрабатывает если не один роутер не сработал
