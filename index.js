@@ -8,12 +8,8 @@ const PORT = 3000;
 
 // Включаем CORS для всех роутов
 app.use(cors({
-  origin: [
-    'http://localhost:5173', 
-    'http://localhost:3000', 
-    'https://your-frontend-app.vercel.app' 
-  ],
-  methods: ['GET'] // Разрешаем только GET-запросы
+  origin: "*", //все домены 
+  methods: ['GET', 'POST'] 
 }));
 
 
