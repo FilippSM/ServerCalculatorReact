@@ -1,30 +1,32 @@
-import express from 'express'
-import cors from 'cors';
-import densRouter from "./routes/dens.route";
+import express from "express"
+import cors from "cors"
+import router from "./api/routes/dens.route.js"
 
-const app = express();
-const PORT = 3000;
+const app = express()
+const PORT = 3000
 
 // Включаем CORS для всех роутов
-app.use(cors({
-  origin: "*", //все домены 
-  methods: ['GET', 'POST'] 
-}));
+app.use(
+  cors({
+    origin: "*", //все домены
+    methods: ["GET", "POST"],
+  }),
+)
 
 app.use(express.json())
-app.use('/static', express.static('public'))
+app.use("/static", express.static("public"))
 
-app.get('/', (req, res) => {
-    res.json({ message: 'Deploy on server' })
+app.get("/", (req, res) => {
+  res.json({ message: "Deploy on server" })
 })
 
-app.use("/dens", densRouter);
+app.use("/dens", router)
 
 //отрабатывает если не один роутер не сработал
 app.use((req, res) => {
-    res.status(404).json({ error: 'Nothing found' })
+  res.status(404).json({ error: "Nothing found" })
 })
 
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`)
+  console.log(`Server is running on http://localhost:${PORT}`)
 })

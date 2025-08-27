@@ -1,16 +1,16 @@
-import express from "express";
-import { getAllDens, getDens, postDens } from "../controllers/dens.controller";
+import express from "express"
+import { getAllDens, getDens, postDens } from "../controllers/dens.controller.js"
 
-const router = express.Router();
+const router = express.Router()
 
 //пример
 //все таски
-router.get("/", getAllDens);
+router.get("/", getAllDens)
 
 //get one data on query parameters
-router.get("/query", getDens);
+router.get("/query", getDens)
 
 //create one data
-router.post("/", postDens);
+router.post("/", postDens)
 
-export default router;
+export default router
