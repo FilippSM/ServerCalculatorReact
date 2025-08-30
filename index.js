@@ -9,7 +9,7 @@ const PORT = 3000
 app.use(
   cors({
     origin: "*", //все домены
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
   }),
 )
 

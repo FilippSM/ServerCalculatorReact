@@ -24,8 +24,22 @@ export const getDens = (req, res) => {
 
 export const postDens = (req, res) => {
   const densityFor20 = req.body.density
+
   const newDensity = { id: density.length + 1, densityFor20 }
   density.push(newDensity)
 
   res.json({ data: newDensity })
+}
+
+export const deleteDens = (req, res) => {
+    const densId = parseInt(req.params.id, 10)
+
+    const densIndex = density.findIndex((dens) => dens.id === densId)
+
+    if (densIndex !== -1) {
+      density.splice(densIndex, 1)
+      res.status(204).json({ data: { id: densId } })
+    } else {
+      res.status(404).json({ error: "Density not found" })
+    }
 }
