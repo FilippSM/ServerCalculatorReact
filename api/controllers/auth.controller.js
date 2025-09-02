@@ -11,7 +11,7 @@ export const postAuth = (req, res) => {
   const newDataAuth = { id: dataAuth.length + 1, login, password }
   dataAuth.push(newDataAuth)
 
-  res.json({ data: newDataAuth })
+  res.json({ data: [newDataAuth] })
 }
 
 
