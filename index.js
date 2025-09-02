@@ -1,6 +1,8 @@
 import express from "express"
 import cors from "cors"
 import router from "./api/routes/dens.route.js"
+import authRouter from "./api/routes/auth.route.js"
+
 
 const app = express()
 const PORT = 3000
@@ -21,6 +23,7 @@ app.get("/", (req, res) => {
 })
 
 app.use("/dens", router)
+app.use("/auth", authRouter)
 
 //отрабатывает если не один роутер не сработал
 app.use((req, res) => {
