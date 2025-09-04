@@ -50,7 +50,7 @@ export const putDens =  (req, res) => {
   const densIndex = density.findIndex((dens) => dens.id === densId)
 
   if (densIndex !== -1) {
-    density[densIndex].densityFor20 = req.body.densityFor20
+    density[densIndex].densityFor20 = req.body.density
     res.json(density[densIndex])
   } else {
     res.status(404).json({ error: "Task not found" })
