@@ -32,14 +32,27 @@ export const postDens = (req, res) => {
 }
 
 export const deleteDens = (req, res) => {
-    const densId = parseInt(req.params.id, 10)
+  const densId = parseInt(req.params.id, 10)
 
-    const densIndex = density.findIndex((dens) => dens.id === densId)
+  const densIndex = density.findIndex((dens) => dens.id === densId)
 
-    if (densIndex !== -1) {
-      density.splice(densIndex, 1)
-      res.status(204).json({ data: { id: densId } })
-    } else {
-      res.status(404).json({ error: "Density not found" })
-    }
+  if (densIndex !== -1) {
+    density.splice(densIndex, 1)
+    res.status(204).json({ data: { id: densId } })
+  } else {
+    res.status(404).json({ error: "Density not found" })
+  }
+}
+
+export const putDens =  (req, res) => {
+  const densId = parseInt(req.params.id, 10)
+
+  const densIndex = density.findIndex((dens) => dens.id === densId)
+
+  if (densIndex !== -1) {
+    density[densIndex].densityFor20 = req.body.densityFor20
+    res.json(density[densIndex])
+  } else {
+    res.status(404).json({ error: "Task not found" })
+  }
 }

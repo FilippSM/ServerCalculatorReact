@@ -1,5 +1,5 @@
 import express from "express"
-import { deleteDens, getAllDens, getDens, postDens } from "../controllers/dens.controller.js"
+import { deleteDens, getAllDens, getDens, postDens, putDens } from "../controllers/dens.controller.js"
 
 const router = express.Router()
 
@@ -15,5 +15,8 @@ router.post("/", postDens)
 
 //delete dens
 router.delete("/:id", deleteDens)
+
+//update dens
+router.put("/:id", putDens)
 
 export default router
