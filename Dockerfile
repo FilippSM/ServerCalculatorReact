@@ -1,22 +1,20 @@
-# backend/Dockerfile
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Копируем package.json
-COPY package.json ./
+COPY package.json package-lock.json* ./
+COPY prisma ./prisma
 
-# Устанавливаем зависимости PRODUCTION
-RUN npm install --only=production
+RUN npm install
 
-# Копируем исходный код
 COPY . .
 
-# Создаем пользователя
+RUN npx prisma generate
+RUN npm run build
+
 RUN adduser -D myuser
 USER myuser
 
 EXPOSE 3000
 
-# ЗАПУСКАЕМ СЕРВЕР - используйте index.js!
-CMD ["node", "index.js"]
+CMD ["node", "dist/server.js"]

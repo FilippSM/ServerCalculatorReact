@@ -1,0 +1,58 @@
+---
+alwaysApply: true
+---
+
+## Правила архитектуры (ОБЯЗАТЕЛЬНО)
+1. Код группируется по ФИЧАМ (доменам), не по типам файлов.
+2. НИКАКИХ общих папок `controllers/`, `services/`, `models/` в корне src/.
+3. Слои внутри фичи: routes → controller → service → repository.
+   Связывание вручную в `<feature>.routes.ts`:
+   const repo = new UserRepository();
+   const service = new UserService(repo);
+   const controller = new UserController(service);
+   Никаких DI-контейнеров (tsyringe, awilix) — только ручная сборка.
+4. Импорты ТОЛЬКО вниз по слоям. repository не знает про service.
+5. Controller — только парсинг req и отправка res. Без бизнес-логики.
+6. Service — только бизнес-логика. Не работает с req/res и БД напрямую.
+7. Repository — только запросы к БД. Без бизнес-логики.
+   PrismaClient импортируется из shared/db/prisma.ts (singleton),
+   НЕ создаётся в репозитории.
+8. Валидация входных данных — через zod-схемы + middleware validate.
+9. Общее между фичами — в shared/. Фичи не импортят друг друга напрямую.
+   Если фиче A нужна фича B — выноси общий контракт в shared/
+   или используй публичный API фичи B (index.ts).
+10. Ошибки — через кастомные классы из shared/errors, ловятся глобальным error-handler.
+11. TypeScript strict, без any, явные типы возврата у функций.
+
+## Эталонная фича "user"
+Сделай её полностью как образец:
+- Сущность User: id, email, name, createdAt, updatedAt
+- Эндпоинты:
+  - GET  /users         → список
+  - GET  /users/:id     → один
+  - POST /users         → создание (валидация zod)
+  - PATCH /users/:id    → обновление
+  - DELETE /users/:id   → удаление
+- Repository через Prisma (import из shared/db/prisma.ts)
+- Валидация: email (zod.string().email()), name (min 2)
+- Обработка "не найдено" → NotFoundError
+- Все ответы в JSON
+
+## app.ts должен содержать
+- express()
+- express.json()
+- подключение userRouter
+- notFound middleware (404)
+- errorHandler middleware (последним)
+- НЕ вызывать app.listen() — это в server.ts
+
+## Дополнительно
+- Создай .cursorrules с этими же правилами, чтобы следовать им во всём проекте.
+- Добавь npm-скрипты: dev (tsx watch), build, start, prisma:migrate, prisma:generate.
+- .env.example с DATABASE_URL и PORT.
+
+## Формат ответа
+1. Сначала покажи дерево файлов.
+2. Потом создай файлы по порядку (конфиги → shared → фича user → app → server).
+3. В конце — команды для запуска.
+4. Не добавляй ничего лишнего (auth, логирование, тесты) — сделаем на следующих шагах.
