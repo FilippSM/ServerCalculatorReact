@@ -7,9 +7,9 @@ alwaysApply: true
 2. НИКАКИХ общих папок `controllers/`, `services/`, `models/` в корне src/.
 3. Слои внутри фичи: routes → controller → service → repository.
    Связывание вручную в `<feature>.routes.ts`:
-   const repo = new UserRepository();
-   const service = new UserService(repo);
-   const controller = new UserController(service);
+   const repo = new CalcXRepository();
+   const service = new CalcXService(repo);
+   const controller = new CalcXController(service);
    Никаких DI-контейнеров (tsyringe, awilix) — только ручная сборка.
 4. Импорты ТОЛЬКО вниз по слоям. repository не знает про service.
 5. Controller — только парсинг req и отправка res. Без бизнес-логики.
@@ -24,35 +24,20 @@ alwaysApply: true
 10. Ошибки — через кастомные классы из shared/errors, ловятся глобальным error-handler.
 11. TypeScript strict, без any, явные типы возврата у функций.
 
-## Эталонная фича "user"
-Сделай её полностью как образец:
-- Сущность User: id, email, name, createdAt, updatedAt
+## Эталонная фича "calc-x"
+- Сущности: CalcXResult (id, number, fluidType, objectName, createdAt), CalcXResultItem (name, result, uncertainty)
 - Эндпоинты:
-  - GET  /users         → список
-  - GET  /users/:id     → один
-  - POST /users         → создание (валидация zod)
-  - PATCH /users/:id    → обновление
-  - DELETE /users/:id   → удаление
+  - POST /calc-x/results → сохранение результатов (валидация zod)
+- Вход: fluidType (oil | antifreeze | lubricant | brake_fluid), objectName (string min 1), results (массив 1..N: name, result, uncertainty — все string min 1)
+- objectName не уникален; сквозной number выдаётся сервером (MAX+1 в транзакции)
+- createdAt хранится в БД, в API-контракте не требуется и в ответе не отдаётся
 - Repository через Prisma (import из shared/db/prisma.ts)
-- Валидация: email (zod.string().email()), name (min 2)
-- Обработка "не найдено" → NotFoundError
-- Все ответы в JSON
+- Все ответы в JSON: { data: { id, number, fluidType, objectName, results } }, статус 201
 
 ## app.ts должен содержать
 - express()
 - express.json()
-- подключение userRouter
+- подключение calcXRouter на /calc-x
 - notFound middleware (404)
 - errorHandler middleware (последним)
 - НЕ вызывать app.listen() — это в server.ts
-
-## Дополнительно
-- Создай .cursorrules с этими же правилами, чтобы следовать им во всём проекте.
-- Добавь npm-скрипты: dev (tsx watch), build, start, prisma:migrate, prisma:generate.
-- .env.example с DATABASE_URL и PORT.
-
-## Формат ответа
-1. Сначала покажи дерево файлов.
-2. Потом создай файлы по порядку (конфиги → shared → фича user → app → server).
-3. В конце — команды для запуска.
-4. Не добавляй ничего лишнего (auth, логирование, тесты) — сделаем на следующих шагах.

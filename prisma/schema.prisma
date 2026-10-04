@@ -7,10 +7,27 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum FluidType {
+  oil
+  antifreeze
+  lubricant
+  brake_fluid
+}
+
+model CalcXResult {
+  id         String            @id @default(cuid())
+  number     Int               @unique
+  fluidType  FluidType
+  objectName String
+  createdAt  DateTime          @default(now())
+  items      CalcXResultItem[]
+}
+
+model CalcXResultItem {
+  id            String      @id @default(cuid())
+  name          String
+  result        String
+  uncertainty   String
+  calcXResultId String
+  calcXResult   CalcXResult @relation(fields: [calcXResultId], references: [id], onDelete: Cascade)
 }
