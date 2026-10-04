@@ -23,12 +23,17 @@
 ## Эталонная фича "calc-x"
 - Сущности: CalcXResult (id, number, fluidType, objectName, createdAt), CalcXResultItem (name, result, uncertainty)
 - Эндпоинты:
+  - GET /calc-x/results → список всех записей
   - POST /calc-x/results → сохранение результатов (валидация zod)
-- Вход: fluidType (oil | antifreeze | lubricant | brake_fluid), objectName (string min 1), results (массив 1..N: name, result, uncertainty — все string min 1)
+  - PATCH /calc-x/results/:id → частичное обновление (можно заменить весь results)
+  - DELETE /calc-x/results/:id → удаление
+- Вход POST: fluidType (oil | antifreeze | lubricant | brake_fluid), objectName (string min 1), results (массив 1..N)
+- Вход PATCH: любое из fluidType / objectName / results (хотя бы одно); number не меняется
 - objectName не уникален; сквозной number выдаётся сервером (MAX+1 в транзакции)
 - createdAt хранится в БД, в API-контракте не требуется и в ответе не отдаётся
+- Не найдено → NotFoundError
 - Repository через Prisma (import из shared/db/prisma.ts)
-- Все ответы в JSON: { data: { id, number, fluidType, objectName, results } }, статус 201
+- Ответы JSON: GET/POST/PATCH → { data }, DELETE → 204
 
 ## app.ts должен содержать
 - express()
