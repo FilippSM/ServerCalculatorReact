@@ -10,9 +10,8 @@
 4. Импорты ТОЛЬКО вниз по слоям. repository не знает про service.
 5. Controller — только парсинг req и отправка res. Без бизнес-логики.
 6. Service — только бизнес-логика. Не работает с req/res и БД напрямую.
-7. Repository — только запросы к БД. Без бизнес-логики.
-   PrismaClient импортируется из shared/db/prisma.ts (singleton),
-   НЕ создаётся в репозитории.
+7. Repository — только доступ к данным. Без бизнес-логики.
+   Пока in-memory store; позже — PostgreSQL (без Prisma).
 8. Валидация входных данных — через zod-схемы + middleware validate.
 9. Общее между фичами — в shared/. Фичи не импортят друг друга напрямую.
    Если фиче A нужна фича B — выноси общий контракт в shared/
@@ -32,7 +31,7 @@
 - objectName не уникален; сквозной number выдаётся сервером (MAX+1 в транзакции)
 - createdAt хранится в БД, в API-контракте не требуется и в ответе не отдаётся
 - Не найдено → NotFoundError
-- Repository через Prisma (import из shared/db/prisma.ts)
+- Repository: пока in-memory; позже PostgreSQL
 - Ответы JSON: GET/POST/PATCH → { data }, DELETE → 204
 
 ## app.ts должен содержать

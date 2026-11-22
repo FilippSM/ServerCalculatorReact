@@ -1,92 +1,94 @@
-import type { CalcXResult, CalcXResultItem } from "@prisma/client";
-import { prisma } from "../../shared/db/prisma.js";
+import { randomUUID } from "node:crypto";
 import type {
+  FluidType,
   SaveCalcXResultsRequest,
   UpdateCalcXResultsRequest,
 } from "./calc-x.schemas.js";
 
-export type CalcXResultWithItems = CalcXResult & {
+export type CalcXResultItem = {
+  id: string;
+  name: string;
+  result: string;
+  uncertainty: string;
+};
+
+export type CalcXResultWithItems = {
+  id: string;
+  number: number;
+  fluidType: FluidType;
+  objectName: string;
+  createdAt: Date;
   items: CalcXResultItem[];
 };
 
+// Temporary in-memory store until PostgreSQL is connected
+const store: CalcXResultWithItems[] = [];
+
 export class CalcXRepository {
   async findAll(): Promise<CalcXResultWithItems[]> {
-    return prisma.calcXResult.findMany({
-      include: { items: true },
-      orderBy: { number: "desc" },
-    });
+    return [...store].sort((a, b) => b.number - a.number);
   }
 
   async findById(id: string): Promise<CalcXResultWithItems | null> {
-    return prisma.calcXResult.findUnique({
-      where: { id },
-      include: { items: true },
-    });
+    return store.find((record) => record.id === id) ?? null;
   }
 
   async create(data: SaveCalcXResultsRequest): Promise<CalcXResultWithItems> {
-    return prisma.$transaction(async (tx) => {
-      const last = await tx.calcXResult.findFirst({
-        orderBy: { number: "desc" },
-        select: { number: true },
-      });
+    const nextNumber =
+      store.reduce((max, record) => Math.max(max, record.number), 0) + 1;
 
-      const nextNumber = (last?.number ?? 0) + 1;
+    const record: CalcXResultWithItems = {
+      id: randomUUID(),
+      number: nextNumber,
+      fluidType: data.fluidType,
+      objectName: data.objectName,
+      createdAt: new Date(),
+      items: data.results.map((item) => ({
+        id: randomUUID(),
+        name: item.name,
+        result: item.result,
+        uncertainty: item.uncertainty,
+      })),
+    };
 
-      return tx.calcXResult.create({
-        data: {
-          number: nextNumber,
-          fluidType: data.fluidType,
-          objectName: data.objectName,
-          items: {
-            create: data.results.map((item) => ({
-              name: item.name,
-              result: item.result,
-              uncertainty: item.uncertainty,
-            })),
-          },
-        },
-        include: { items: true },
-      });
-    });
+    store.push(record);
+    return record;
   }
 
   async update(
     id: string,
     data: UpdateCalcXResultsRequest,
   ): Promise<CalcXResultWithItems> {
-    return prisma.$transaction(async (tx) => {
-      if (data.results !== undefined) {
-        await tx.calcXResultItem.deleteMany({ where: { calcXResultId: id } });
-      }
+    const index = store.findIndex((record) => record.id === id);
+    const existing = store[index];
 
-      return tx.calcXResult.update({
-        where: { id },
-        data: {
-          ...(data.fluidType !== undefined
-            ? { fluidType: data.fluidType }
-            : {}),
-          ...(data.objectName !== undefined
-            ? { objectName: data.objectName }
-            : {}),
-          ...(data.results !== undefined
-            ? {
-                items: {
-                  create: data.results.map((item) => ({
-                    name: item.name,
-                    result: item.result,
-                    uncertainty: item.uncertainty,
-                  })),
-                },
-              }
-            : {}),
-        },
-        include: { items: true },
-      });
-    });
+    if (!existing) {
+      throw new Error(`CalcX result with id "${id}" not found`);
+    }
+
+    const updated: CalcXResultWithItems = {
+      ...existing,
+      fluidType: data.fluidType ?? existing.fluidType,
+      objectName: data.objectName ?? existing.objectName,
+      items:
+        data.results !== undefined
+          ? data.results.map((item) => ({
+              id: randomUUID(),
+              name: item.name,
+              result: item.result,
+              uncertainty: item.uncertainty,
+            }))
+          : existing.items,
+    };
+
+    store[index] = updated;
+    return updated;
   }
 
   async delete(id: string): Promise<void> {
-    await prisma.calcXResult.delete({ where: { id } });
+    const index = store.findIndex((record) => record.id === id);
+    if (index !== -1) {
+      store.splice(index, 1);
+    }
   }
 }
