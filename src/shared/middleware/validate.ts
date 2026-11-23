@@ -1,16 +1,34 @@
+import { plainToInstance, type ClassConstructor } from "class-transformer";
+import { validate as validateDto } from "class-validator";
 import type { NextFunction, Request, Response } from "express";
-import type { ZodSchema } from "zod";
 
 type RequestPart = "body" | "params" | "query";
 
-export const validate = (
-  schema: ZodSchema,
+export const validate = <T extends object>(
+  DtoClass: ClassConstructor<T>,
   part: RequestPart = "body",
 ) => {
-  return (req: Request, _res: Response, next: NextFunction): void => {
+  return async (
+    req: Request,
+    _res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
-      const parsed = schema.parse(req[part]);
-      req[part] = parsed;
+      const instance = plainToInstance(DtoClass, req[part], {
+        enableImplicitConversion: true,
+      });
+
+      const errors = await validateDto(instance, {
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      });
+
+      if (errors.length > 0) {
+        next(errors);
+        return;
+      }
+
+      req[part] = instance;
       next();
     } catch (error) {
       next(error);

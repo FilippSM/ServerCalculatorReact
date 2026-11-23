@@ -1,17 +1,21 @@
 import type { NextFunction, Request, Response } from "express";
 import type { CalcXService } from "./calc-x.service.js";
 import type {
-  CalcXResultIdParams,
-  SaveCalcXResultsRequest,
-  UpdateCalcXResultsRequest,
-} from "./calc-x.schemas.js";
+  GetOilTestListResponse,
+  GetOilTestResponse,
+  OilTestIdParamsDto,
+  SaveOilTestDto,
+  SaveOilTestResponse,
+  UpdateOilTestDto,
+  UpdateOilTestResponse,
+} from "./calc-x.dto.js";
 
 export class CalcXController {
   constructor(private readonly calcXService: CalcXService) {}
 
   getAll = async (
     _req: Request,
-    res: Response,
+    res: Response<GetOilTestListResponse>,
     next: NextFunction,
   ): Promise<void> => {
     try {
@@ -22,14 +26,28 @@ export class CalcXController {
     }
   };
 
-  saveResults = async (
+  getById = async (
     req: Request,
-    res: Response,
+    res: Response<GetOilTestResponse>,
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const body = req.body as SaveCalcXResultsRequest;
-      const data = await this.calcXService.saveResults(body);
+      const { id } = req.params as unknown as OilTestIdParamsDto;
+      const data = await this.calcXService.getById(id);
+      res.json({ data });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  save = async (
+    req: Request,
+    res: Response<SaveOilTestResponse>,
+    next: NextFunction,
+  ): Promise<void> => {
+    try {
+      const body = req.body as SaveOilTestDto;
+      const data = await this.calcXService.save(body);
       res.status(201).json({ data });
     } catch (error) {
       next(error);
@@ -38,12 +56,12 @@ export class CalcXController {
 
   update = async (
     req: Request,
-    res: Response,
+    res: Response<UpdateOilTestResponse>,
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const { id } = req.params as CalcXResultIdParams;
-      const body = req.body as UpdateCalcXResultsRequest;
+      const { id } = req.params as unknown as OilTestIdParamsDto;
+      const body = req.body as UpdateOilTestDto;
       const data = await this.calcXService.update(id, body);
       res.json({ data });
     } catch (error) {
@@ -57,7 +75,7 @@ export class CalcXController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      const { id } = req.params as CalcXResultIdParams;
+      const { id } = req.params as unknown as OilTestIdParamsDto;
       await this.calcXService.delete(id);
       res.status(204).send();
     } catch (error) {

@@ -16,7 +16,7 @@ alwaysApply: true
 6. Service — только бизнес-логика. Не работает с req/res и БД напрямую.
 7. Repository — только доступ к данным. Без бизнес-логики.
    Пока in-memory store; позже — PostgreSQL (без Prisma).
-8. Валидация входных данных — через zod-схемы + middleware validate.
+8. Валидация входных данных — через class-validator DTO + middleware validate.
 9. Общее между фичами — в shared/. Фичи не импортят друг друга напрямую.
    Если фиче A нужна фича B — выноси общий контракт в shared/
    или используй публичный API фичи B (index.ts).
@@ -27,7 +27,7 @@ alwaysApply: true
 - Сущности: CalcXResult (id, number, fluidType, objectName, createdAt), CalcXResultItem (name, result, uncertainty)
 - Эндпоинты:
   - GET /calc-x/results → список всех записей
-  - POST /calc-x/results → сохранение результатов (валидация zod)
+  - POST /calc-x/results → сохранение результатов (валидация class-validator)
   - PATCH /calc-x/results/:id → частичное обновление (можно заменить весь results)
   - DELETE /calc-x/results/:id → удаление
 - Вход POST: fluidType (oil | antifreeze | lubricant | brake_fluid), objectName (string min 1), results (массив 1..N)

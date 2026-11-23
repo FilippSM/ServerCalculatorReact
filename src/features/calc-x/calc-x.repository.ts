@@ -1,53 +1,29 @@
 import { randomUUID } from "node:crypto";
 import type {
-  FluidType,
-  SaveCalcXResultsRequest,
-  UpdateCalcXResultsRequest,
-} from "./calc-x.schemas.js";
-
-export type CalcXResultItem = {
-  id: string;
-  name: string;
-  result: string;
-  uncertainty: string;
-};
-
-export type CalcXResultWithItems = {
-  id: string;
-  number: number;
-  fluidType: FluidType;
-  objectName: string;
-  createdAt: Date;
-  items: CalcXResultItem[];
-};
+  OilTest,
+  SaveOilTestDto,
+  UpdateOilTestDto,
+} from "./calc-x.dto.js";
 
 // Temporary in-memory store until PostgreSQL is connected
-const store: CalcXResultWithItems[] = [];
+const store: OilTest[] = [];
 
 export class CalcXRepository {
-  async findAll(): Promise<CalcXResultWithItems[]> {
-    return [...store].sort((a, b) => b.number - a.number);
+  async findAll(): Promise<OilTest[]> {
+    return [...store].sort((a, b) => b.date.localeCompare(a.date));
   }
 
-  async findById(id: string): Promise<CalcXResultWithItems | null> {
+  async findById(id: string): Promise<OilTest | null> {
     return store.find((record) => record.id === id) ?? null;
   }
 
-  async create(data: SaveCalcXResultsRequest): Promise<CalcXResultWithItems> {
-    const nextNumber =
-      store.reduce((max, record) => Math.max(max, record.number), 0) + 1;
-
-    const record: CalcXResultWithItems = {
+  async create(data: SaveOilTestDto): Promise<OilTest> {
+    const record: OilTest = {
       id: randomUUID(),
-      number: nextNumber,
-      fluidType: data.fluidType,
-      objectName: data.objectName,
-      createdAt: new Date(),
-      items: data.results.map((item) => ({
-        id: randomUUID(),
-        name: item.name,
-        result: item.result,
-        uncertainty: item.uncertainty,
+      date: data.date,
+      results: data.results.map((item) => ({
+        testId: item.testId,
+        value: item.value,
       })),
     };
 
@@ -55,30 +31,24 @@ export class CalcXRepository {
     return record;
   }
 
-  async update(
-    id: string,
-    data: UpdateCalcXResultsRequest,
-  ): Promise<CalcXResultWithItems> {
+  async update(id: string, data: UpdateOilTestDto): Promise<OilTest> {
     const index = store.findIndex((record) => record.id === id);
     const existing = store[index];
 
     if (!existing) {
-      throw new Error(`CalcX result with id "${id}" not found`);
+      throw new Error(`Oil test with id "${id}" not found`);
     }
 
-    const updated: CalcXResultWithItems = {
-      ...existing,
-      fluidType: data.fluidType ?? existing.fluidType,
-      objectName: data.objectName ?? existing.objectName,
-      items:
+    const updated: OilTest = {
+      id: existing.id,
+      date: data.date ?? existing.date,
+      results:
         data.results !== undefined
           ? data.results.map((item) => ({
-              id: randomUUID(),
-              name: item.name,
-              result: item.result,
-              uncertainty: item.uncertainty,
+              testId: item.testId,
+              value: item.value,
             }))
-          : existing.items,
+          : existing.results,
     };
 
     store[index] = updated;

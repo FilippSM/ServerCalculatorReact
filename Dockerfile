@@ -1,14 +1,16 @@
 FROM node:20-alpine
 
+RUN corepack enable && corepack prepare pnpm@10.13.1 --activate
+
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
+COPY package.json pnpm-lock.yaml ./
 
-RUN npm install
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-RUN npm run build
+RUN pnpm run build
 
 RUN adduser -D myuser
 USER myuser
