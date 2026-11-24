@@ -1,14 +1,17 @@
-import "reflect-metadata";
-import express, { type Express } from "express";
-import { calcXRouter } from "./features/calc-x/index.js";
-import { errorHandler } from "./shared/middleware/errorHandler.js";
-import { notFound } from "./shared/middleware/notFound.js";
+import "reflect-metadata"
+import express, { type Express } from "express"
+import { db } from "./db/db.js"
+import { errorHandlerMiddleware } from "./middleware/error-handler-middleware.js"
+import { notFoundMiddleware } from "./middleware/not-found-middleware.js"
+import { getCalcXRouter } from "./routes/calc-x.js"
 
-const app: Express = express();
+/**
+ * Сборка Express-приложения без listen (для тестов и Vercel).
+ * Express app wiring without listen (for tests and Vercel).
+ */
+export const app: Express = express()
 
-app.use(express.json());
-app.use("/calc-x", calcXRouter);
-app.use(notFound);
-app.use(errorHandler);
-
-export { app };
+app.use(express.json())
+app.use("/calc-x", getCalcXRouter(db))
+app.use(notFoundMiddleware)
+app.use(errorHandlerMiddleware)
